@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jeu Alphabet Militaire</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to bottom, #e0e0e0, #c0c0c0);
+      color: #333;
+      text-align: center;
+    }
+
+    .container, .intro-screen {
+      max-width: 500px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-top: 20px;
+    }
+
+    .letter {
+      font-size: 3em;
+      margin: 20px 0;
+    }
+
+    input {
+      padding: 10px;
+      width: 80%;
+      max-width: 300px;
+      margin-bottom: 10px;
+      font-size: 1em;
+    }
+
+    .feedback {
+      font-weight: bold;
+      margin: 10px 0;
+    }
+
+    .correct { color: green; }
+    .wrong { color: red; }
+
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      font-size: 1em;
+      cursor: pointer;
+      border: none;
+      border-radius: 5px;
+      background-color: #333;
+      color: white;
+    }
+
+    .stats {
+      margin-top: 20px;
+    }
+
+    .history {
+      margin-top: 30px;
+      text-align: left;
+    }
+
+    .history h2 {
+      font-size: 1.2em;
+      text-align: center;
+    }
+
+    .history ul {
+      padding: 0;
+      list-style: none;
+    }
+
+    .history li {
+      padding: 4px 0;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .hidden {
+      display: none;
+    }
+
+    .intro-screen h1 {
+      font-size: 2.2em;
+      margin-bottom: 10px;
+    }
+
+    .intro-screen p {
+      font-size: 1.1em;
+      margin-bottom: 20px;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="intro-screen" id="introScreen">
+    <h1>Bienvenue dans l'Alphabet Militaire</h1>
+    <p>Testez vos connaissances du code phonétique international !</p>
+    <button onclick="startGame()">Commencer le jeu</button>
+  </div>
+
+  <div class="container hidden" id="gameContainer">
+    <div class="letter" id="letter">A</div>
+    <input type="text" id="input" placeholder="Entrez la signification" autocomplete="off">
+    <div class="feedback" id="feedback"></div>
+    <button onclick="checkAnswer()">Valider</button>
+    <button onclick="nextLetter()">Suivant</button>
+    <button class="hidden" id="replayBtn" onclick="resetGame()">Rejouer</button>
+
+    <div class="stats">
+      <p>Score : <span id="score">0</span> / 26</p>
+      <p>Temps : <span id="timer">00:00</span></p>
+    </div>
+
+    <div class="history">
+      <h2>Historique des parties</h2>
+      <ul id="historyList"></ul>
+    </div>
+  </div>
+
+  <script>
+    const alphabet = {
+      A: "Alpha", B: "Bravo", C: "Charlie", D: "Delta", E: "Echo",
+      F: "Foxtrot", G: "Golf", H: "Hotel", I: "India", J: "Juliett",
+      K: "Kilo", L: "Lima", M: "Mike", N: "November", O: "Oscar",
+      P: "Papa", Q: "Quebec", R: "Romeo", S: "Sierra", T: "Tango",
+      U: "Uniform", V: "Victor", W: "Whiskey", X: "X-ray", Y: "Yankee", Z: "Zulu"
+    };
+
+    let letters = Object.keys(alphabet);
+    let currentLetter = '';
+    let usedLetters = [];
+    let score = 0;
+    let seconds = 0;
+    let timer;
+    let gameStarted = false;
+
+    function pad(n) {
+      return n < 10 ? '0' + n : n;
+    }
+
+    function updateTimer() {
+      seconds++;
+      const min = Math.floor(seconds / 60);
+      const sec = seconds % 60;
+      document.getElementById("timer").textContent = `${pad(min)}:${pad(sec)}`;
+    }
+
+    function startTimer() {
+      if (!gameStarted) {
+        gameStarted = true;
+        timer = setInterval(updateTimer, 1000);
+      }
+    }
+
+    function stopTimer() {
+      clearInterval(timer);
+    }
+
+    function pickLetter() {
+      if (usedLetters.length === 26) {
+        document.getElementById("letter").textContent = "Fini !";
+        document.getElementById("feedback").textContent = "Bravo ! Vous avez terminé.";
+        document.getElementById("replayBtn").classList.remove("hidden");
+        stopTimer();
+        saveScore();
+        return;
+      }
+
+      let rand;
+      do {
+        rand = letters[Math.floor(Math.random() * letters.length)];
+      } while (usedLetters.includes(rand));
+
+      currentLetter = rand;
+      usedLetters.push(rand);
+      document.getElementById("letter").textContent = currentLetter;
+      document.getElementById("input").value = '';
+      document.getElementById("feedback").textContent = '';
+    }
+
+    function checkAnswer() {
+      const input = document.getElementById("input").value.trim().toLowerCase();
+      const expected = alphabet[currentLetter].toLowerCase();
+      const feedback = document.getElementById("feedback");
+
+      if (input === expected) {
+        feedback.textContent = "Bonne réponse !";
+        feedback.className = "feedback correct";
+        score++;
+        document.getElementById("score").textContent = score;
+      } else {
+        feedback.textContent = `Faux ! C'était : ${alphabet[currentLetter]}`;
+        feedback.className = "feedback wrong";
+      }
+    }
+
+    function nextLetter() {
+      startTimer();
+      pickLetter();
+    }
+
+    function resetGame() {
+      usedLetters = [];
+      score = 0;
+      seconds = 0;
+      gameStarted = false;
+      document.getElementById("score").textContent = "0";
+      document.getElementById("timer").textContent = "00:00";
+      document.getElementById("feedback").textContent = '';
+      document.getElementById("replayBtn").classList.add("hidden");
+      clearInterval(timer);
+      pickLetter();
+    }
+
+    function saveScore() {
+      const time = document.getElementById("timer").textContent;
+      const history = JSON.parse(localStorage.getItem("militaryAlphaScores") || "[]");
+      const date = new Date().toLocaleString('fr-FR');
+      history.unshift({ date, score, time });
+      localStorage.setItem("militaryAlphaScores", JSON.stringify(history.slice(0, 10)));
+      updateHistoryList();
+    }
+
+    function updateHistoryList() {
+      const list = document.getElementById("historyList");
+      list.innerHTML = '';
+      const history = JSON.parse(localStorage.getItem("militaryAlphaScores") || "[]");
+      history.forEach((h, i) => {
+        const li = document.createElement("li");
+        li.textContent = `#${i + 1} – ${h.score}/26 en ${h.time} (${h.date})`;
+        list.appendChild(li);
+      });
+    }
+
+    function startGame() {
+      document.getElementById("introScreen").classList.add("hidden");
+      document.getElementById("gameContainer").classList.remove("hidden");
+      updateHistoryList();
+      nextLetter();
+    }
+  </script>
+</body>
+</html>
