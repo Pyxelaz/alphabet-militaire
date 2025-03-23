@@ -113,7 +113,7 @@
     <input type="text" id="input" placeholder="Entrez la signification" autocomplete="off">
     <div class="feedback" id="feedback"></div>
     <button onclick="checkAnswer()">Valider</button>
-    <button onclick="nextLetter()">Suivant</button>
+  
     <button class="hidden" id="replayBtn" onclick="resetGame()">Rejouer</button>
 
     <div class="stats">
@@ -189,19 +189,25 @@
     }
 
     function checkAnswer() {
-      const input = document.getElementById("input").value.trim().toLowerCase();
-      const expected = alphabet[currentLetter].toLowerCase();
-      const feedback = document.getElementById("feedback");
+  const input = document.getElementById("input").value.trim().toLowerCase();
+  const correct = alphabet[currentLetter].toLowerCase();
+  const feedback = document.getElementById("feedback");
 
-      if (input === expected) {
-        feedback.textContent = "Bonne réponse !";
-        feedback.className = "feedback correct";
-        score++;
-        document.getElementById("score").textContent = score;
-      } else {
-        feedback.textContent = `Faux ! C'était : ${alphabet[currentLetter]}`;
-        feedback.className = "feedback wrong";
-      }
+  if (input === correct) {
+    feedback.textContent = "Bonne réponse !";
+    feedback.className = "feedback correct";
+    score++;
+    document.getElementById("score").textContent = score;
+  } else {
+    feedback.textContent = `Faux ! C'était : ${alphabet[currentLetter]}`;
+    feedback.className = "feedback wrong";
+  }
+
+  // Attend 1 seconde puis passe à la prochaine lettre
+  setTimeout(() => {
+    pickLetter();
+  }, 1000);
+
     }
 
     function nextLetter() {
